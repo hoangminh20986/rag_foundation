@@ -19,62 +19,94 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS cho giao diện hiện đại & chỉn chu
-st.markdown("""
-    <style>
-    .main-header {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #1E293B;
-        text-align: center;
-        margin-bottom: 0.5rem;
-    }
-    .sub-header {
-        font-size: 1.1rem;
-        color: #64748B;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    .chunk-card {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 18px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .badge-fixed {
-        background-color: #DBEAFE;
-        color: #1E40AF;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-    .badge-semantic {
-        background-color: #DCFCE7;
-        color: #166534;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-    .badge-hierarchical {
-        background-color: #F3E8FF;
-        color: #6B21A8;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-    .stat-box {
-        background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
-        padding: 15px;
-        border-radius: 8px;
-        text-align: center;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# ============================================================
+# GIAO DIỆN THEO BỘ NHẬN DIỆN THƯƠNG HIỆU AGRIBANK
+# Màu chủ đạo: Đỏ burgundy #8B1538  |  Vàng kim #F5A623
+# ============================================================
+AGRIBANK_CSS = """
+<style>
+:root {
+    --agri-red: #8B1538;
+    --agri-red-dark: #6E0F2C;
+    --agri-gold: #F5A623;
+    --agri-gold-soft: #FDF3E2;
+    --agri-text: #2B2B2B;
+}
+.stApp { background-color: #FFFFFF; }
+
+/* Thanh tiêu đề thương hiệu */
+.agri-banner {
+    background: linear-gradient(135deg, var(--agri-red) 0%, var(--agri-red-dark) 100%);
+    border-bottom: 4px solid var(--agri-gold);
+    border-radius: 10px;
+    padding: 18px 24px;
+    margin-bottom: 22px;
+}
+.agri-banner h1 {
+    color: #FFFFFF; font-size: 1.9rem; font-weight: 800;
+    margin: 0; letter-spacing: 0.3px;
+}
+.agri-banner p { color: var(--agri-gold-soft); margin: 6px 0 0 0; font-size: 1rem; }
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, var(--agri-red) 0%, var(--agri-red-dark) 100%);
+}
+section[data-testid="stSidebar"] * { color: #FFF7EC !important; }
+section[data-testid="stSidebar"] hr { border-color: rgba(245,166,35,0.45); }
+
+/* Tiêu đề mục */
+h2, h3 { color: var(--agri-red) !important; }
+
+/* Nút bấm */
+.stButton > button {
+    background-color: var(--agri-red); color: #FFFFFF;
+    border: 1px solid var(--agri-red-dark); border-radius: 8px;
+    font-weight: 600; padding: 8px 18px;
+}
+.stButton > button:hover {
+    background-color: var(--agri-gold); color: var(--agri-red-dark);
+    border-color: var(--agri-gold);
+}
+
+/* Thẻ nội dung */
+.agri-card {
+    background-color: #FFFBF4;
+    border: 1px solid #EADFCB;
+    border-left: 5px solid var(--agri-red);
+    border-radius: 10px; padding: 16px; margin-bottom: 14px;
+}
+
+/* Ô chỉ số */
+.agri-stat {
+    background: linear-gradient(135deg, var(--agri-red) 0%, var(--agri-red-dark) 100%);
+    border-bottom: 3px solid var(--agri-gold);
+    border-radius: 10px; padding: 16px; text-align: center; color: #FFFFFF;
+}
+.agri-stat h4 { color: var(--agri-gold) !important; margin: 0 0 8px 0; }
+.agri-stat p { color: #FFFFFF; margin: 2px 0; }
+
+/* Nhãn (badge) */
+.agri-badge {
+    background-color: var(--agri-red); color: #FFFFFF;
+    padding: 4px 12px; border-radius: 12px;
+    font-size: 0.85rem; font-weight: 600;
+}
+.agri-badge-gold {
+    background-color: var(--agri-gold); color: #5A3A00;
+    padding: 4px 12px; border-radius: 12px;
+    font-size: 0.85rem; font-weight: 600;
+}
+
+/* Ô nhập liệu & expander */
+.stTextInput input, .stTextArea textarea { border: 1px solid #D8C7A8 !important; }
+div[data-testid="stExpander"] {
+    border: 1px solid #EADFCB !important; border-radius: 8px;
+}
+</style>
+"""
+
+st.markdown(AGRIBANK_CSS, unsafe_allow_html=True)
 
 # Hàm tải dữ liệu an toàn
 def load_json_file(file_name: str):
@@ -89,8 +121,14 @@ def load_json_file(file_name: str):
     return None
 
 def main():
-    st.markdown('<div class="main-header">📚 TRỰC QUAN HÓA RAG FOUNDATION — BUỔI 05</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-header">Phân tích kết quả OCR & So sánh 3 Chiến lược Chunking (Fixed-size, Semantic, Hierarchical)</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="agri-banner">'
+        '<h1>📚 TRỰC QUAN HÓA RAG FOUNDATION — BUỔI 05</h1>'
+        '<p>Phân tích kết quả OCR &amp; So sánh 3 Chiến lược Chunking '
+        '(Fixed-size, Semantic, Hierarchical)</p>'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
     # Tải dữ liệu từ thư mục output
     raw_data = load_json_file("raw_text.json")
@@ -125,7 +163,7 @@ def main():
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown(f"""
-            <div class="stat-box">
+            <div class="agri-stat">
                 <h4>Fixed-size</h4>
                 <p><b>Số Chunk:</b> {len(chunks_fixed)}</p>
                 <p><b>Độ dài trung bình:</b> {round(sum(len(c['text']) for c in chunks_fixed)/len(chunks_fixed), 1) if chunks_fixed else 0} ký tự</p>
@@ -134,7 +172,7 @@ def main():
         
         with col2:
             st.markdown(f"""
-            <div class="stat-box">
+            <div class="agri-stat">
                 <h4>Semantic</h4>
                 <p><b>Số Chunk:</b> {len(chunks_semantic)}</p>
                 <p><b>Độ dài trung bình:</b> {round(sum(len(c['text']) for c in chunks_semantic)/len(chunks_semantic), 1) if chunks_semantic else 0} ký tự</p>
@@ -143,7 +181,7 @@ def main():
 
         with col3:
             st.markdown(f"""
-            <div class="stat-box">
+            <div class="agri-stat">
                 <h4>Hierarchical</h4>
                 <p><b>Số Chunk:</b> {len(chunks_hierarchical)}</p>
                 <p><b>Độ dài trung bình:</b> {round(sum(len(c['text']) for c in chunks_hierarchical)/len(chunks_hierarchical), 1) if chunks_hierarchical else 0} ký tự</p>
@@ -167,8 +205,8 @@ def main():
         for chunk in filtered:
             with st.container():
                 st.markdown(f"""
-                <div class="chunk-card">
-                    <span class="badge-fixed">ID: {chunk['chunk_id']}</span> | <b>Độ dài:</b> {chunk['metadata'].get('char_count', len(chunk['text']))} ký tự | <b>Trang:</b> {chunk['page_start']}
+                <div class="agri-card">
+                    <span class="agri-badge">ID: {chunk['chunk_id']}</span> | <b>Độ dài:</b> {chunk['metadata'].get('char_count', len(chunk['text']))} ký tự | <b>Trang:</b> {chunk['page_start']}
                     <hr style="margin: 10px 0;">
                     <p style="white-space: pre-wrap; font-family: monospace; font-size: 0.95rem;">{chunk['text']}</p>
                 </div>
@@ -183,8 +221,8 @@ def main():
         for chunk in filtered:
             with st.container():
                 st.markdown(f"""
-                <div class="chunk-card">
-                    <span class="badge-semantic">ID: {chunk['chunk_id']}</span> | <b>Nguyên nhân ngắt:</b> {chunk['metadata'].get('split_reason', 'N/A')} | <b>Độ dài:</b> {chunk['metadata'].get('char_count', len(chunk['text']))} ký tự
+                <div class="agri-card">
+                    <span class="agri-badge-gold">ID: {chunk['chunk_id']}</span> | <b>Nguyên nhân ngắt:</b> {chunk['metadata'].get('split_reason', 'N/A')} | <b>Độ dài:</b> {chunk['metadata'].get('char_count', len(chunk['text']))} ký tự
                     <hr style="margin: 10px 0;">
                     <p style="white-space: pre-wrap; font-size: 0.95rem;">{chunk['text']}</p>
                 </div>
@@ -201,8 +239,8 @@ def main():
             article_info = chunk['metadata'].get('article', 'Không có')
             with st.container():
                 st.markdown(f"""
-                <div class="chunk-card">
-                    <span class="badge-hierarchical">ID: {chunk['chunk_id']}</span> | <b>Chương:</b> {chapter_info} | <b>Điều:</b> {article_info}
+                <div class="agri-card">
+                    <span class="agri-badge">ID: {chunk['chunk_id']}</span> | <b>Chương:</b> {chapter_info} | <b>Điều:</b> {article_info}
                     <hr style="margin: 10px 0;">
                     <p style="white-space: pre-wrap; font-size: 0.95rem; font-weight: 500;">{chunk['text']}</p>
                 </div>
