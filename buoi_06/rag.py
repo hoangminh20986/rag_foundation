@@ -90,10 +90,20 @@ def index_chunks(client):
         if not os.path.exists(output_dir):
             return False, f"Không tìm thấy thư mục chunks: {output_dir}"
         
+        # Quet de quy: file chunks_*.json co the nam o output/ hoac output/chunks/
+        chunk_files = []
+        for root, _dirs, files in os.walk(output_dir):
+            for fname in files:
+                if fname.startswith("chunks_") and fname.endswith(".json"):
+                    chunk_files.append(os.path.join(root, fname))
+
+        if not chunk_files:
+            return False, f"Khong tim thay file chunks_*.json trong: {output_dir}"
+
         total_indexed = 0
-        for fname in os.listdir(output_dir):
-            if fname.startswith("chunks_") and fname.endswith(".json"):
-                fpath = os.path.join(output_dir, fname)
+        for fpath in chunk_files:
+            if True:
+                fname = os.path.basename(fpath)
                 with open(fpath, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     if isinstance(data, list):
