@@ -1,0 +1,79 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 612 792] /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Length 820 >>
+stream
+BT
+/F1 16 Tf
+50 740 Td
+(CONG HOA XA HOI CHU NGHIA VIET NAM) Tj
+0 -20 Td
+/F1 12 Tf
+(Doc lap - Tu do - Hanh phuc) Tj
+0 -35 Td
+/F1 14 Tf
+(QUY DINH MAU VE QUAN LY TAI LIEU VA HE THONG RAG) Tj
+0 -20 Td
+/F1 10 Tf
+((Tai lieu mo phong cong khai dung cho hoc tap)) Tj
+0 -35 Td
+/F1 12 Tf
+(Chuong I: QUY DINH CHUNG) Tj
+0 -25 Td
+/F1 11 Tf
+(Dieu 1. Pham vi dieu chinh) Tj
+0 -18 Td
+/F1 10 Tf
+(Quy dinh nay huong dan viec xu ly van ban, OCR va chunking RAG Foundation.) Tj
+0 -25 Td
+/F1 11 Tf
+(Dieu 2. Doi tuong ap dung) Tj
+0 -18 Td
+/F1 10 Tf
+(Quy dinh nay ap dung cho hoc vien tim hieu ve RAG.) Tj
+0 -35 Td
+/F1 12 Tf
+(Chuong II: QUY TRINH XU LY TAI LIEU) Tj
+0 -25 Td
+/F1 11 Tf
+(Dieu 3. Tiep nhan tai lieu) Tj
+0 -18 Td
+/F1 10 Tf
+(Tai lieu dau vao la cac file PDF tieng Viet cong khai tai thu muc datademo.) Tj
+0 -25 Td
+/F1 11 Tf
+(Dieu 4. Phan doan du lieu \(Chunking\)) Tj
+0 -18 Td
+/F1 10 Tf
+(1. Fixed-size: Chia theo do dai co dinh co overlap.) Tj
+0 -15 Td
+(2. Semantic: Chia theo ranh gioi cau va doan van.) Tj
+0 -15 Td
+(3. Hierarchical: Chia theo cau truc Chuong, Dieu, Khoan.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000243 00000 n 
+0000000338 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1210
+%%EOF

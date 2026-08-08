@@ -1,0 +1,5 @@
+streamlit
+google-genai
+chromadb
+psycopg2-binary
+python-dotenv

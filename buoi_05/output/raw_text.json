@@ -1,0 +1,13 @@
+{
+  "source": "van_ban_mau.pdf",
+  "ocr_used": false,
+  "language": "vi",
+  "total_pages": 1,
+  "text": "CONG HOA XA HOI CHU NGHIA VIET NAM\nDoc lap - Tu do - Hanh phuc\n\nQUY DINH MAU VE QUAN LY TAI LIEU VA HE THONG RAG\n(Tai lieu mo phong cong khai dung cho hoc tap)\n\nChuong I: QUY DINH CHUNG\n\nDieu 1. Pham vi dieu chinh\nQuy dinh nay huong dan viec xu ly van ban, OCR va chunking RAG Foundation.\n\nDieu 2. Doi tuong ap dung\nQuy dinh nay ap dung cho hoc vien tim hieu ve RAG.\n\nChuong II: QUY TRINH XU LY TAI LIEU\n\nDieu 3. Tiep nhan tai lieu\nTai lieu dau vao la cac file PDF tieng Viet cong khai tai thu muc datademo.\n\nDieu 4. Phan doan du lieu (Chunking)\n1. Fixed-size: Chia theo do dai co dinh co overlap.\n2. Semantic: Chia theo ranh gioi cau va doan van.\n3. Hierarchical: Chia theo cau truc Chuong, Dieu, Khoan.",
+  "pages": [
+    {
+      "page": 1,
+      "text": "CONG HOA XA HOI CHU NGHIA VIET NAM\nDoc lap - Tu do - Hanh phuc\n\nQUY DINH MAU VE QUAN LY TAI LIEU VA HE THONG RAG\n(Tai lieu mo phong cong khai dung cho hoc tap)\n\nChuong I: QUY DINH CHUNG\n\nDieu 1. Pham vi dieu chinh\nQuy dinh nay huong dan viec xu ly van ban, OCR va chunking RAG Foundation.\n\nDieu 2. Doi tuong ap dung\nQuy dinh nay ap dung cho hoc vien tim hieu ve RAG.\n\nChuong II: QUY TRINH XU LY TAI LIEU\n\nDieu 3. Tiep nhan tai lieu\nTai lieu dau vao la cac file PDF tieng Viet cong khai tai thu muc datademo.\n\nDieu 4. Phan doan du lieu (Chunking)\n1. Fixed-size: Chia theo do dai co dinh co overlap.\n2. Semantic: Chia theo ranh gioi cau va doan van.\n3. Hierarchical: Chia theo cau truc Chuong, Dieu, Khoan."
+    }
+  ]
+}
