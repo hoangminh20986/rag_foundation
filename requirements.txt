@@ -1,0 +1,7 @@
+streamlit>=1.36
+chromadb>=1.0
+onnxruntime
+tokenizers
+google-genai
+python-dotenv
+pysqlite3-binary; sys_platform == "linux"
