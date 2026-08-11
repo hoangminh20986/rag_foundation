@@ -17,6 +17,7 @@ import sys
 import json
 import importlib.util
 from pathlib import Path
+from typing import Any, Dict, Tuple
 
 import streamlit as st
 
@@ -62,6 +63,10 @@ section[data-testid="stSidebar"] {
 }
 section[data-testid="stSidebar"] * { color: #FFF7EC !important; }
 section[data-testid="stSidebar"] hr { border-color: rgba(245,166,35,0.45); }
+section[data-testid="stSidebar"] input {
+    background-color: #FFFFFF !important;
+    color: #3A0D1C !important;
+}
 
 h2, h3 { color: var(--agri-red) !important; }
 
@@ -132,6 +137,164 @@ def bootstrap_secrets() -> None:
 
 
 bootstrap_secrets()
+
+
+# ============================================================
+# QUẢN LÝ GEMINI_API_KEY NGAY TRÊN GIAO DIỆN
+# ------------------------------------------------------------
+# Nguyên tắc bảo mật:
+#   - Khóa do người dùng nhập chỉ nằm trong st.session_state (theo từng phiên
+#     trình duyệt), KHÔNG ghi vào os.environ (biến môi trường dùng chung cho cả
+#     tiến trình -> sẽ rò rỉ sang phiên của người dùng khác trên Streamlit Cloud),
+#     KHÔNG ghi ra file .env, KHÔNG commit lên GitHub.
+#   - Khóa được truyền xuống module rag của Buổi 06/07 qua tham số hàm.
+# ============================================================
+KEY_STATE = "gemini_api_key"
+KEY_CHECK_STATE = "gemini_api_key_check"
+NONCE_STATE = "gemini_key_nonce"
+EMB_MODEL_STATE = "gemini_embedding_model_input"
+GEN_MODEL_STATE = "gemini_generation_model_input"
+
+
+def get_api_key() -> str:
+    """Khóa đang hiệu lực: ưu tiên khóa người dùng nhập, sau đó tới Secrets/ENV."""
+    session_key = str(st.session_state.get(KEY_STATE, "") or "").strip()
+    if session_key:
+        return session_key
+    return os.environ.get("GEMINI_API_KEY", "").strip()
+
+
+def get_key_source() -> str:
+    if str(st.session_state.get(KEY_STATE, "") or "").strip():
+        return "Người dùng nhập trong phiên này"
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        return "Streamlit Secrets / biến môi trường"
+    return "Chưa có"
+
+
+def mask_key(key: str) -> str:
+    if not key:
+        return ""
+    if len(key) <= 8:
+        return "•" * len(key)
+    return f"{key[:4]}{'•' * 8}{key[-4:]}"
+
+
+def verify_api_key(key: str) -> Tuple[bool, str]:
+    """Gọi thử Gemini API để xác thực khóa. Trả về (hợp_lệ, thông_điệp)."""
+    if not key:
+        return False, "Chưa có khóa để kiểm tra."
+    try:
+        from google import genai
+    except Exception as e:
+        return False, f"Chưa cài đặt thư viện google-genai: {e}"
+
+    try:
+        client = genai.Client(api_key=key)
+        try:
+            next(iter(client.models.list()), None)
+        except AttributeError:
+            client.models.generate_content(model="gemini-2.5-flash", contents="ping")
+        return True, "Khóa hợp lệ — đã kết nối được Gemini API."
+    except Exception as e:
+        return False, f"Khóa không dùng được: {str(e).replace(key, '***')[:400]}"
+
+
+def render_api_key_panel() -> None:
+    """Ô nhập + các nút thao tác GEMINI_API_KEY trên sidebar."""
+    st.sidebar.divider()
+    active_key = get_api_key()
+
+    with st.sidebar.expander("🔑 Cấu hình GEMINI_API_KEY", expanded=not bool(active_key)):
+        st.caption(
+            "Khóa chỉ lưu tạm trong phiên trình duyệt của bạn: không ghi ra file, "
+            "không commit lên GitHub, tự mất khi đóng/tải lại trang."
+        )
+
+        nonce = st.session_state.setdefault(NONCE_STATE, 0)
+        input_widget_key = f"gemini_api_key_input_{nonce}"
+        st.text_input(
+            "Dán GEMINI_API_KEY vào đây",
+            key=input_widget_key,
+            type="password",
+            placeholder="AIza...",
+            help="Lấy khóa miễn phí tại Google AI Studio: https://aistudio.google.com/app/apikey",
+        )
+        typed_key = str(st.session_state.get(input_widget_key, "") or "").strip()
+
+        col_save, col_test, col_clear = st.columns(3)
+        save_clicked = col_save.button("💾 Lưu", use_container_width=True, key="btn_save_key")
+        test_clicked = col_test.button("🔍 Kiểm tra", use_container_width=True, key="btn_test_key")
+        clear_clicked = col_clear.button("🗑️ Xóa", use_container_width=True, key="btn_clear_key")
+
+        if clear_clicked:
+            st.session_state.pop(KEY_STATE, None)
+            st.session_state[KEY_CHECK_STATE] = None
+            st.session_state[NONCE_STATE] = nonce + 1
+            st.rerun()
+
+        if save_clicked:
+            if not typed_key:
+                st.error("Chưa nhập khóa.")
+            else:
+                st.session_state[KEY_STATE] = typed_key
+                st.session_state[KEY_CHECK_STATE] = None
+                st.success("Đã lưu khóa cho phiên làm việc này.")
+                active_key = typed_key
+
+        if test_clicked:
+            candidate = typed_key or get_api_key()
+            if not candidate:
+                st.error("Chưa có khóa để kiểm tra.")
+            else:
+                with st.spinner("Đang gọi thử Gemini API..."):
+                    st.session_state[KEY_CHECK_STATE] = verify_api_key(candidate)
+
+        check_result = st.session_state.get(KEY_CHECK_STATE)
+        if check_result:
+            ok, message = check_result
+            (st.success if ok else st.error)(message)
+
+        st.markdown(
+            "[→ Lấy API key tại Google AI Studio](https://aistudio.google.com/app/apikey)"
+        )
+
+        st.divider()
+        st.caption("Tùy chọn nâng cao — để trống nếu dùng cấu hình mặc định (áp dụng cho Buổi 07)")
+        st.text_input(
+            "GEMINI_EMBEDDING_MODEL",
+            key=EMB_MODEL_STATE,
+            placeholder=os.environ.get("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001"),
+        )
+        st.text_input(
+            "GEMINI_GENERATION_MODEL",
+            key=GEN_MODEL_STATE,
+            placeholder=os.environ.get("GEMINI_GENERATION_MODEL", "gemini-2.5-flash"),
+        )
+
+    active_key = get_api_key()
+    if active_key:
+        st.sidebar.success(f"🔑 GEMINI_API_KEY: {mask_key(active_key)}")
+        st.sidebar.caption(f"Nguồn: {get_key_source()}")
+    else:
+        st.sidebar.error("🔑 GEMINI_API_KEY: Chưa cấu hình")
+        st.sidebar.caption("Mở mục 🔑 phía trên để nhập khóa rồi bấm 💾 Lưu.")
+
+
+def apply_runtime_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    """Ghi đè config của rag.py bằng khóa/model người dùng nhập trên giao diện."""
+    api_key = get_api_key()
+    if api_key:
+        config["GEMINI_API_KEY"] = api_key
+        config["API_KEY_PRESENT"] = True
+
+    emb_model = str(st.session_state.get(EMB_MODEL_STATE, "") or "").strip()
+    gen_model = str(st.session_state.get(GEN_MODEL_STATE, "") or "").strip()
+    if emb_model:
+        config["GEMINI_EMBEDDING_MODEL"] = emb_model
+    if gen_model:
+        config["GEMINI_GENERATION_MODEL"] = gen_model
+    return config
 
 
 @st.cache_resource(show_spinner=False)
@@ -289,11 +452,11 @@ def render_buoi_06() -> None:
     chroma_status_str, chroma_client = rag.check_chroma_status()
     st.sidebar.markdown(f"**ChromaDB:** {chroma_status_str}")
 
-    gemini_status = rag.check_gemini_status()
-    if "Có" in gemini_status:
-        st.sidebar.success(f"**Gemini API Key:** {gemini_status}")
+    api_key = get_api_key()
+    if api_key:
+        st.sidebar.success("**Gemini API Key:** Có (Valid)")
     else:
-        st.sidebar.warning(f"**Gemini API Key:** {gemini_status}")
+        st.sidebar.warning("**Gemini API Key:** Thiếu — nhập tại mục 🔑 trên sidebar")
 
     st.subheader("1. Đánh chỉ mục dữ liệu (Index)")
     st.caption("Bộ chỉ mục mẫu đã có sẵn trong repo — chỉ bấm khi muốn tạo lại.")
@@ -328,10 +491,10 @@ def render_buoi_06() -> None:
                 st.caption(f"Strategy: {meta.get('strategy', 'N/A')}")
 
     st.markdown("### 💡 Câu trả lời (Answer)")
-    api_key = rag.get_env_var("GEMINI_API_KEY")
-    if not api_key or not api_key.strip():
+    if not api_key:
         st.warning(
-            "⚠️ Chưa cấu hình GEMINI_API_KEY. Chỉ hiển thị kết quả Retrieval ở trên, không gọi Gemini."
+            "⚠️ Chưa cấu hình GEMINI_API_KEY. Chỉ hiển thị kết quả Retrieval ở trên, không gọi Gemini. "
+            "Hãy nhập khóa tại mục 🔑 Cấu hình GEMINI_API_KEY trên sidebar rồi bấm 💾 Lưu."
         )
     elif results:
         with st.spinner("Đang tổng hợp câu trả lời với Gemini..."):
@@ -349,7 +512,7 @@ def render_buoi_07() -> None:
     rag = load_module("rag07", "buoi_07/rag.py")
 
     try:
-        config = rag.get_config()
+        config = apply_runtime_config(rag.get_config())
     except Exception as e:
         st.error(f"Lỗi đọc cấu hình: {e}")
         return
@@ -359,7 +522,7 @@ def render_buoi_07() -> None:
     if config["API_KEY_PRESENT"]:
         st.sidebar.success("🔑 GEMINI_API_KEY: Có")
     else:
-        st.sidebar.error("🔑 GEMINI_API_KEY: Thiếu")
+        st.sidebar.error("🔑 GEMINI_API_KEY: Thiếu — nhập tại mục 🔑 trên sidebar")
 
     strategy = st.sidebar.selectbox(
         "Chiến lược Chunking (Strategy):",
@@ -374,7 +537,7 @@ def render_buoi_07() -> None:
     st.sidebar.text(f"• Max Distance: {config['RAG_MAX_DISTANCE']}")
 
     try:
-        status_info = rag.run_status(strategy=strategy)
+        status_info = rag.run_status(strategy=strategy, config=config)
     except Exception as e:
         st.sidebar.error(f"Lỗi đọc status: {e}")
         status_info = {"collection_name": "Lỗi", "exists": False, "record_count": 0}
@@ -396,7 +559,7 @@ def render_buoi_07() -> None:
         reset_option = st.checkbox("Reset collection trước khi index")
         if st.button("🚀 Index dữ liệu"):
             if not config["API_KEY_PRESENT"]:
-                st.error("Không thể index: thiếu GEMINI_API_KEY.")
+                st.error("Không thể index: thiếu GEMINI_API_KEY. Nhập khóa tại mục 🔑 trên sidebar.")
             else:
                 with st.spinner(f"Đang sinh embedding cho strategy '{strategy}'..."):
                     try:
@@ -404,6 +567,7 @@ def render_buoi_07() -> None:
                             input_dir=rag.DEFAULT_INPUT_DIR,
                             strategy=strategy,
                             reset=reset_option,
+                            config=config,
                         )
                         st.success(
                             f"Indexing hoàn tất — {res['indexed_chunks']} chunks, "
@@ -427,12 +591,17 @@ def render_buoi_07() -> None:
         st.warning("Vui lòng nhập nội dung câu hỏi trước khi gửi.")
         return
     if not config["API_KEY_PRESENT"]:
-        st.error("Không thể truy vấn: thiếu GEMINI_API_KEY.")
+        st.error("Không thể truy vấn: thiếu GEMINI_API_KEY. Nhập khóa tại mục 🔑 trên sidebar.")
         return
 
     with st.spinner("Đang truy xuất và tổng hợp câu trả lời..."):
         try:
-            q_res = rag.run_query(question=question_input.strip(), strategy=strategy, top_k=top_k)
+            q_res = rag.run_query(
+                question=question_input.strip(),
+                strategy=strategy,
+                top_k=top_k,
+                config=config,
+            )
         except Exception as ex:
             st.error(f"Lỗi truy vấn: {ex}")
             return
@@ -473,6 +642,10 @@ PAGES = {
 
 st.sidebar.markdown("### 📚 RAG Foundation")
 choice = st.sidebar.radio("Chọn buổi thực hành:", list(PAGES.keys()))
+
+# Ô nhập GEMINI_API_KEY hiển thị ở mọi trang
+render_api_key_panel()
+
 PAGES[choice]()
 
 st.sidebar.divider()
